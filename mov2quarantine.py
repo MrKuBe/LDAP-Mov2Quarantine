@@ -34,7 +34,7 @@ html_content = """
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <script>
         function filterTable() {
-            var input, filter, table, tr, td, i, j, txtValue;
+            var input, filter, table, tr, td, i, j, txtValue, count = 0;
             input = document.getElementById("searchInput");
             filter = input.value.toUpperCase();
             table = document.getElementById("resultsTable");
@@ -47,15 +47,17 @@ html_content = """
                         txtValue = td[j].textContent || td[j].innerText;
                         if (txtValue.toUpperCase().indexOf(filter) > -1) {
                             tr[i].style.display = "";
+                            count++;
                             break;
                         }
                     }
                 }
             }
+            document.getElementById("resultCount").innerText = count + " résultats";
         }
 
         function filterAction() {
-            var select, filter, table, tr, td, i;
+            var select, filter, table, tr, td, i, count = 0;
             select = document.getElementById("actionFilter");
             filter = select.value;
             table = document.getElementById("resultsTable");
@@ -65,11 +67,13 @@ html_content = """
                 if (td) {
                     if (filter === "all" || td.textContent === filter) {
                         tr[i].style.display = "";
+                        count++;
                     } else {
                         tr[i].style.display = "none";
                     }
                 }
             }
+            document.getElementById("resultCount").innerText = count + " résultats";
         }
     </script>
 </head>
@@ -82,6 +86,7 @@ html_content = """
             <option value="Aucune action">Aucune action</option>
             <option value="Déplacé">A déplacer</option>
         </select>
+        <p id="resultCount"></p>
         <table class="table table-striped mt-3" id="resultsTable">
             <thead>
                 <tr>
@@ -158,6 +163,10 @@ html_content += """
             </tbody>
         </table>
     </div>
+    <script>
+        // Initial count of results
+        document.getElementById("resultCount").innerText = document.getElementById("resultsTable").getElementsByTagName("tr").length - 1 + " résultats";
+    </script>
 </body>
 </html>
 """
