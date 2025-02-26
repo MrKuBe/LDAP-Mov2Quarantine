@@ -53,12 +53,35 @@ html_content = """
                 }
             }
         }
+
+        function filterAction() {
+            var select, filter, table, tr, td, i;
+            select = document.getElementById("actionFilter");
+            filter = select.value;
+            table = document.getElementById("resultsTable");
+            tr = table.getElementsByTagName("tr");
+            for (i = 1; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[2];
+                if (td) {
+                    if (filter === "all" || td.textContent === filter) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
     </script>
 </head>
 <body>
     <div class="container">
         <h1 class="mt-5">Résultats de la requête LDAP</h1>
         <input class="form-control mb-3" id="searchInput" type="text" placeholder="Rechercher..." onkeyup="filterTable()">
+        <select class="form-control mb-3" id="actionFilter" onchange="filterAction()">
+            <option value="all">Tous les résultats</option>
+            <option value="Aucune action">Aucune action</option>
+            <option value="Déplacé">A déplacer</option>
+        </select>
         <table class="table table-striped mt-3" id="resultsTable">
             <thead>
                 <tr>
@@ -122,8 +145,9 @@ for entry in conn.entries:
             print(f"L'utilisateur {user_samaccountname} a été déplacé vers l'OU de destination automatiquement.")
 
     action = "Déplacé" if should_move else "Aucune action"
+    row_class = "table-danger" if should_move else ""
     html_content += f"""
-                <tr>
+                <tr class="{row_class}">
                     <td>{user_samaccountname}</td>
                     <td>{last_logon_str}</td>
                     <td>{action}</td>
