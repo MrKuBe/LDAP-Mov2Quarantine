@@ -23,6 +23,53 @@ conn = Connection(server, user=config['username'], password=config['password'], 
 # Rechercher tous les utilisateurs dans l'OU de scrutation
 conn.search(ou_dn_source, '(objectClass=user)', attributes=['sAMAccountName', 'lastLogon'])
 
+# Générer le contenu HTML
+html_content = """
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résultats de la requête LDAP</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script>
+        function filterTable() {
+            var input, filter, table, tr, td, i, j, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("resultsTable");
+            tr = table.getElementsByTagName("tr");
+            for (i = 1; i < tr.length; i++) {
+                tr[i].style.display = "none";
+                td = tr[i].getElementsByTagName("td");
+                for (j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            tr[i].style.display = "";
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Résultats de la requête LDAP</h1>
+        <input class="form-control mb-3" id="searchInput" type="text" placeholder="Rechercher..." onkeyup="filterTable()">
+        <table class="table table-striped mt-3" id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Nom d'utilisateur</th>
+                    <th>Dernière connexion</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+"""
+
 # Traiter chaque utilisateur trouvé
 for entry in conn.entries:
     user_samaccountname = entry.sAMAccountName.value
@@ -32,6 +79,7 @@ for entry in conn.entries:
         print(f"👤 L'utilisateur {user_samaccountname} n'a jamais ouvert sa session. ❌")
         should_move = True
         last_logon_date = None  # Définir last_logon_date à None
+        last_logon_str = "Jamais"
     else:
         # Vérifier si last_logon est déjà un objet datetime
         if isinstance(last_logon, datetime):
@@ -46,6 +94,7 @@ for entry in conn.entries:
                 continue  # Passer à l'utilisateur suivant
 
         print(f"🗓️ L'utilisateur {user_samaccountname} a ouvert sa session pour la dernière fois le {last_logon_date.strftime('%Y-%m-%d %H:%M:%S')}.")
+        last_logon_str = last_logon_date.strftime('%Y-%m-%d %H:%M:%S')
 
         if last_logon_date and datetime.now(timezone.utc) - last_logon_date.replace(tzinfo=timezone.utc) > timedelta(days=90):  # Plus de 3 mois
             print(f"⚠️ L'utilisateur {user_samaccountname} n'a pas ouvert sa session depuis plus de trois mois. ❌")
@@ -72,5 +121,29 @@ for entry in conn.entries:
             logging.info(f"L'utilisateur {user_samaccountname} a été déplacé vers l'OU de destination automatiquement.")
             print(f"L'utilisateur {user_samaccountname} a été déplacé vers l'OU de destination automatiquement.")
 
+    action = "Déplacé" if should_move else "Aucune action"
+    html_content += f"""
+                <tr>
+                    <td>{user_samaccountname}</td>
+                    <td>{last_logon_str}</td>
+                    <td>{action}</td>
+                </tr>
+    """
+
+html_content += """
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+"""
+
+with open('resultats_ldap.html', 'w', encoding='utf-8') as html_file:
+    html_file.write(html_content)
+
 # Fermer la connexion
 conn.unbind()
+
+# Ouvrir le fichier HTML dans le navigateur par défaut
+import webbrowser
+webbrowser.open('resultats_ldap.html')
