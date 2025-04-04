@@ -57,7 +57,10 @@ html_content = f"""
                 var count = 0;
                 $('#resultsTable tbody tr').each(function() {{
                     var action = $(this).find('td:eq(2)').text();
-                    if (filter === 'all' || action === filter) {{
+                    var lastLogon = $(this).find('td:eq(1)').text();
+                    if (filter === 'all' || 
+                        (filter === 'never' && lastLogon === 'Jamais') ||
+                        action === filter) {{
                         $(this).show();
                         count++;
                     }} else {{
@@ -99,6 +102,7 @@ html_content = f"""
             <div class="field">
                 <select class="ui dropdown" id="actionFilter">
                     <option value="all">Tous les résultats</option>
+                    <option value="never">Jamais connecté</option>
                     <option value="Aucune action">Aucune action</option>
                     <option value="Déplacé">A déplacer</option>
                 </select>

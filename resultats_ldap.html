@@ -30,7 +30,10 @@
                 var count = 0;
                 $('#resultsTable tbody tr').each(function() {
                     var action = $(this).find('td:eq(2)').text();
-                    if (filter === 'all' || action === filter) {
+                    var lastLogon = $(this).find('td:eq(1)').text();
+                    if (filter === 'all' || 
+                        (filter === 'never' && lastLogon === 'Jamais') ||
+                        action === filter) {
                         $(this).show();
                         count++;
                     } else {
@@ -72,6 +75,7 @@
             <div class="field">
                 <select class="ui dropdown" id="actionFilter">
                     <option value="all">Tous les résultats</option>
+                    <option value="never">Jamais connecté</option>
                     <option value="Aucune action">Aucune action</option>
                     <option value="Déplacé">A déplacer</option>
                 </select>
@@ -90,7 +94,7 @@
 
                 <tr class="">
                     <td>nserafin</td>
-                    <td>2025-04-04 09:33:39</td>
+                    <td>2025-04-04 12:19:02</td>
                     <td>Aucune action</td>
                 </tr>
     
@@ -1002,13 +1006,13 @@
     
                 <tr class="">
                     <td>lcouplaix</td>
-                    <td>2025-04-04 07:14:05</td>
+                    <td>2025-04-04 11:36:33</td>
                     <td>Aucune action</td>
                 </tr>
     
                 <tr class="">
                     <td>bbourdet</td>
-                    <td>2025-04-04 08:48:28</td>
+                    <td>2025-04-04 11:43:07</td>
                     <td>Aucune action</td>
                 </tr>
     
