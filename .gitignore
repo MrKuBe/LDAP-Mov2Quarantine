@@ -1,8 +1,8 @@
 # Ignorer tous les fichiers .log
 *.log
 
-# Ignorer tous les fichiers .json
+# Ignorer tous les fichiers .json et .html
 *.json
-
+*.html
 # Ignorer tous les fichiers de resultats .html
 resultats_ldap.html
