@@ -27,16 +27,18 @@ conn.search(ou_dn_source, '(objectClass=user)', attributes=['sAMAccountName', 'l
 # Générer le contenu HTML
 html_content = f"""
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Résultats de la requête LDAP</title>
+    <title>LDAP Query Results</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.2/dist/semantic.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.2/dist/semantic.min.js"></script>
+    <script src="https://semantic-ui.com/javascript/library/tablesort.js"></script>
     <script type="text/javascript">
         $(document).ready(function() {{
+            // Fonctions existantes de filtrage
             function filterTable() {{
                 var input = $('#searchInput').val().toUpperCase();
                 var count = 0;
@@ -49,7 +51,7 @@ html_content = f"""
                         $(this).hide();
                     }}
                 }});
-                $('#resultCount').text(count + " résultats");
+                $('#resultCount').text(count + " results");
             }}
 
             function filterAction() {{
@@ -59,7 +61,7 @@ html_content = f"""
                     var action = $(this).find('td:eq(2)').text();
                     var lastLogon = $(this).find('td:eq(1)').text();
                     if (filter === 'all' || 
-                        (filter === 'never' && lastLogon === 'Jamais') ||
+                        (filter === 'never' && lastLogon === 'Never') ||
                         action === filter) {{
                         $(this).show();
                         count++;
@@ -67,53 +69,56 @@ html_content = f"""
                         $(this).hide();
                     }}
                 }});
-                $('#resultCount').text(count + " résultats");
+                $('#resultCount').text(count + " results");
             }}
+
+            // Nouvelle fonction pour le tri des colonnes
+            $('.sortable.table').tablesort();
 
             $('#searchInput').on('keyup', filterTable);
             $('#actionFilter').on('change', filterAction);
-            $('#resultCount').text($('#resultsTable tbody tr').length + " résultats");
+            $('#resultCount').text($('#resultsTable tbody tr').length + " results");
         }});
     </script>
 </head>
 <body>
     <div class="ui container">
-        <h1 class="ui header">Résultats de la requête LDAP</h1>
+        <h1 class="ui header">LDAP Query Results</h1>
         
         <div class="ui info message">
-            <div class="header"><i class="info circle icon"></i>À propos de cet outil</div>
+            <div class="header"><i class="info circle icon"></i>About this tool</div>
             <ul class="ui list">
-                <li><i class="search icon"></i>Analyse les comptes utilisateurs dans l'Active Directory et éventuellement, les déplace de <div class="ui tiny label">{ou_dn_source}</div> vers <div class="ui tiny label">{ou_dn_destination}</div></li>
-                <li><i class="exclamation triangle icon"></i>Identifie les comptes inactifs depuis plus de {inactivity_days} jours</li>
-                <li><i class="hand point up icon"></i>Mode manuel : demande confirmation avant déplacement</li>
-                <li><i class="cogs icon"></i>Mode automatique : déplace automatiquement les comptes inactifs</li>
-                <li><i class="filter icon"></i>Recherche et filtrage des résultats en temps réel</li>
-                <li><i class="warning sign icon"></i>Les lignes en rouge indiquent les comptes à déplacer</li>
+                <li><i class="search icon"></i>Analyzes user accounts in Active Directory and possibly moves them from <div class="ui tiny label">{ou_dn_source}</div> to <div class="ui tiny label">{ou_dn_destination}</div></li>
+                <li><i class="exclamation triangle icon"></i>Identifies accounts inactive for more than {inactivity_days} days</li>
+                <li><i class="hand point up icon"></i>Manual mode: asks for confirmation before moving</li>
+                <li><i class="cogs icon"></i>Automatic mode: automatically moves inactive accounts</li>
+                <li><i class="filter icon"></i>Real-time search and filtering of results</li>
+                <li><i class="warning sign icon"></i>Red rows indicate accounts to be moved</li>
             </ul>
         </div>
 
         <div class="ui form">
             <div class="field">
                 <div class="ui icon input">
-                    <input id="searchInput" type="text" placeholder="Rechercher...">
+                    <input id="searchInput" type="text" placeholder="Search...">
                     <i class="search icon"></i>
                 </div>
             </div>
             <div class="field">
                 <select class="ui dropdown" id="actionFilter">
-                    <option value="all">Tous les résultats</option>
-                    <option value="never">Jamais connecté</option>
-                    <option value="Aucune action">Aucune action</option>
-                    <option value="Déplacé">A déplacer</option>
+                    <option value="all">All results</option>
+                    <option value="never">Never connected</option>
+                    <option value="No action">No action</option>
+                    <option value="Moved">To be moved</option>
                 </select>
             </div>
         </div>
         <div id="resultCount" class="ui label"></div>
-        <table class="ui celled striped table" id="resultsTable">
+        <table class="ui sortable celled striped table" id="resultsTable">
             <thead>
                 <tr>
-                    <th>Nom d'utilisateur</th>
-                    <th>Dernière connexion</th>
+                    <th class="sorted ascending">Username</th>
+                    <th>Last login</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -132,12 +137,12 @@ for entry in conn.entries:
     if last_logon is None:
         # Si le compte n'a jamais été utilisé, vérifier s'il est assez ancien
         if account_age > timedelta(days=inactivity_days):
-            print(f"👤 L'utilisateur {user_samaccountname} n'a jamais ouvert sa session et existe depuis {account_age.days} jours. ❌")
+            print(f"👤 User {user_samaccountname} has never logged in and exists for {account_age.days} days. ❌")
             should_move = True
         else:
-            print(f"👤 L'utilisateur {user_samaccountname} n'a jamais ouvert sa session mais a été créé il y a moins de {inactivity_days} jours. ✅")
+            print(f"👤 User {user_samaccountname} has never logged in but was created less than {inactivity_days} days ago. ✅")
             should_move = False
-        last_logon_str = "Jamais"
+        last_logon_str = "Never"
     else:
         # Vérifier si last_logon est déjà un objet datetime
         if isinstance(last_logon, datetime):
@@ -146,7 +151,7 @@ for entry in conn.entries:
             try:
                 last_logon_date = datetime.fromtimestamp(int(last_logon) / 1e7 - 11644473600)
             except Exception as e:
-                print(f"Erreur lors de la conversion de la date de dernière connexion pour {user_samaccountname}: {e}")
+                print(f"Error converting last login date for {user_samaccountname}: {e}")
                 should_move = False
                 continue
 
@@ -154,31 +159,31 @@ for entry in conn.entries:
         last_logon_str = last_logon_date.strftime('%Y-%m-%d %H:%M:%S')
 
         if inactivity_time > timedelta(days=inactivity_days) and account_age > timedelta(days=inactivity_days):
-            print(f"⚠️ L'utilisateur {user_samaccountname} n'a pas ouvert sa session depuis {inactivity_time.days} jours. ❌")
+            print(f"⚠️ User {user_samaccountname} hasn't logged in for {inactivity_time.days} days. ❌")
             should_move = True
         else:
-            print(f"✅ L'utilisateur {user_samaccountname} est actif ou trop récent.")
+            print(f"✅ User {user_samaccountname} is active or too recent.")
             should_move = False
 
     # Gestion du mode d'opération pour le déplacement
     if should_move:
         if operation_mode == 'manuel':
-            confirmation = input(f"Voulez-vous déplacer l'utilisateur {user_samaccountname} vers l'OU de destination ? (Oui/Non) : ")
-            if confirmation.lower() == 'oui':
+            confirmation = input(f"Do you want to move user {user_samaccountname} to the destination OU? (Yes/No): ")
+            if confirmation.lower() == 'yes':
                 # Déplacer l'utilisateur vers l'OU de destination (commenté pour le test)
                 # conn.modify_dn(entry, new_dn=f'CN={user_samaccountname},{ou_dn_destination}')
-                logging.info(f"L'utilisateur {user_samaccountname} a été déplacé vers l'OU de destination.")
-                print(f"L'utilisateur {user_samaccountname} a été déplacé vers l'OU de destination.")
+                logging.info(f"User {user_samaccountname} has been moved to destination OU.")
+                print(f"User {user_samaccountname} has been moved to destination OU.")
             else:
-                print("Aucune action effectuée.")
-                logging.info(f"Aucune action effectuée pour l'utilisateur {user_samaccountname}.")
+                print("No action taken.")
+                logging.info(f"No action taken for user {user_samaccountname}.")
         elif operation_mode == 'automatique':
             # Déplacer l'utilisateur vers l'OU de destination sans confirmation (commenté pour le test)
             # conn.modify_dn(entry, new_dn=f'CN={user_samaccountname},{ou_dn_destination}')
-            logging.info(f"L'utilisateur {user_samaccountname} a été déplacé vers l'OU de destination automatiquement.")
-            print(f"L'utilisateur {user_samaccountname} a été déplacé vers l'OU de destination automatiquement.")
+            logging.info(f"User {user_samaccountname} has been automatically moved to destination OU.")
+            print(f"User {user_samaccountname} has been automatically moved to destination OU.")
 
-    action = "Déplacé" if should_move else "Aucune action"
+    action = "Moved" if should_move else "No action"
     row_class = "negative" if should_move else ""
     html_content += f"""
                 <tr class="{row_class}">
