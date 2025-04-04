@@ -3,3 +3,6 @@
 
 # Ignorer tous les fichiers .json
 *.json
+
+# Ignorer tous les fichiers de resultats .html
+resultats_ldap.html
