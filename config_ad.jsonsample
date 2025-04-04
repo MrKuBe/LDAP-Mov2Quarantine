@@ -4,5 +4,6 @@
     "password": "<password>",
     "ou_dn_source": "OU=<ou>,DC=<dc>,DC=<dc>",
     "ou_dn_destination": "OU=<ou>,DC=<dc>,DC=<dc>",
-    "operation_mode": "<automatic> ou <manual>"
+    "operation_mode": "<automatic> ou <manual>",
+    "inactivity_days": 90
 }
