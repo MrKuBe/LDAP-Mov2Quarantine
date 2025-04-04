@@ -1,5 +1,44 @@
 # Mov2Quarantine
 
+[English](#english) | [Français](#français)
+
+# English
+
+Tool for managing inactive Active Directory accounts.
+
+## Features
+
+- Analysis of user accounts in Active Directory
+- Automatic or manual movement of inactive accounts to a quarantine OU
+- Interactive web interface with filtering options:
+  - Text search
+  - Status filter (All, No action, To move)
+  - Last login filter (Never connected)
+- Highlighting of accounts to be moved
+- Action logging
+
+## Configuration
+
+Use the `config_ad.json` file to configure:
+- AD connection information
+- Source and destination OUs
+- Operation mode (manual/automatic)
+- Number of days of inactivity
+
+## Usage
+
+1. Configure the `config_ad.json` file
+2. Run `mov2quarantine.py`
+3. A browser will open with the management interface
+4. Use filters to analyze accounts
+5. In manual mode, confirm each move
+
+---
+
+# Français
+
+## Mov2Quarantine
+
 Outil de gestion des comptes Active Directory inactifs.
 
 ## Fonctionnalités
