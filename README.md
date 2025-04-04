@@ -77,6 +77,6 @@ Distribué sous la licence MIT. Voir `LICENSE` pour plus d'informations.
 
 ## 👥 Contact
 
-Votre Nom - [@votre_twitter](https://twitter.com/votre_twitter)
+Votre Nom - [@kubdesign](https://twitter.com/kubdesign)
 
 Lien du projet : [https://github.com/votre-username/Mov2Quarantine](https://github.com/votre-username/Mov2Quarantine)
